@@ -33,23 +33,33 @@ const stats = [
 ] as const
 
 export default function Page() {
-  const [pick, setPick] = useState<string | null>(null)
-  const [votes, setVotes] = useState({ 'Zachary Nowell': 0, 'Fischer Anderson': 0 })
+  const pollOptions = {
+    mile: ['Zachary Nowell', 'Fischer Anderson'],
+    fight: ['Zachary Nowell', 'Fischer Anderson'],
+    finish: ['Zach submission', 'Fischer submission', 'KO / TKO', 'Decision'],
+  } as const
+  type PollId = keyof typeof pollOptions
+  const [picks, setPicks] = useState<Record<PollId, string | null>>({ mile: null, fight: null, finish: null })
+  const [votes, setVotes] = useState<Record<PollId, Record<string, number>>>({
+    mile: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
+    fight: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
+    finish: { 'Zach submission': 0, 'Fischer submission': 0, 'KO / TKO': 0, Decision: 0 },
+  })
 
-  const chooseWinner = (name: string) => {
-    if (pick === name) return
+  const choosePollOption = (poll: PollId, option: string) => {
+    if (picks[poll] === option) return
     setVotes((current) => ({
       ...current,
-      ...(pick ? { [pick]: Math.max(0, current[pick as keyof typeof current] - 1) } : {}),
-      [name]: current[name as keyof typeof current] + 1,
+      [poll]: { ...current[poll], ...(picks[poll] ? { [picks[poll] as string]: Math.max(0, current[poll][picks[poll] as string] - 1) } : {}), [option]: current[poll][option] + 1 },
     }))
-    setPick(name)
+    setPicks((current) => ({ ...current, [poll]: option }))
   }
 
-  const takeBackVote = () => {
+  const takeBackVote = (poll: PollId) => {
+    const pick = picks[poll]
     if (!pick) return
-    setVotes((current) => ({ ...current, [pick]: Math.max(0, current[pick as keyof typeof current] - 1) }))
-    setPick(null)
+    setVotes((current) => ({ ...current, [poll]: { ...current[poll], [pick]: Math.max(0, current[poll][pick] - 1) } }))
+    setPicks((current) => ({ ...current, [poll]: null }))
   }
 
   return (
@@ -120,28 +130,39 @@ export default function Page() {
           <section aria-labelledby="poll-heading" className="order-first mt-8 border border-white/15 bg-white/[0.03] p-6 sm:p-8">
             <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8b84b]">Fan poll</p>
-                <h2 id="poll-heading" className="mt-2 text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">Who wins the mile, then the MMA fight?</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8b84b]">Fan polls</p>
+                <h2 id="poll-heading" className="mt-2 text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">Call the October 5th card</h2>
               </div>
-              <p className="text-xs uppercase tracking-[0.15em] text-white/40">One vote per person</p>
+              <p className="text-xs uppercase tracking-[0.15em] text-white/40">One vote per poll</p>
             </div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {fighters.map((fighter) => {
-                const total = votes['Zachary Nowell'] + votes['Fischer Anderson']
-                const count = votes[fighter.name as keyof typeof votes]
-                const percent = total ? Math.round((count / total) * 100) : 0
+            <div className="mt-6 grid gap-5 lg:grid-cols-3">
+              {([
+                ['mile', 'Who wins the mile?'],
+                ['fight', 'Who wins the fight?'],
+                ['finish', 'How is the fight won?'],
+              ] as const).map(([poll, title]) => {
+                const total = Object.values(votes[poll]).reduce((sum, count) => sum + count, 0)
                 return (
-                  <button key={fighter.name} type="button" onClick={() => chooseWinner(fighter.name)} aria-pressed={pick === fighter.name} className={`relative overflow-hidden border p-4 text-left transition ${pick === fighter.name ? 'border-[#e8b84b] bg-[#e8b84b]/15' : 'border-white/15 bg-white/[0.03] hover:border-white/40'}`}>
-                    <span className="relative z-10 flex items-center justify-between gap-3 text-sm font-black uppercase tracking-[0.08em]">
-                      <span>{fighter.name}</span><span className="text-[#e8b84b]">{percent}%</span>
-                    </span>
-                    <span className="relative z-10 mt-2 block text-xs uppercase tracking-[0.14em] text-white/45">{count} vote{count === 1 ? '' : 's'} · {pick === fighter.name ? 'Your pick' : 'Vote'} </span>
-                    <span className="absolute inset-y-0 left-0 bg-[#e8b84b]/10 transition-all" style={{ width: `${percent}%` }} />
-                  </button>
+                  <div key={poll} className="border border-white/10 bg-black/10 p-4">
+                    <h3 className="text-sm font-black uppercase tracking-[0.08em]">{title}</h3>
+                    <div className="mt-3 flex flex-col gap-2">
+                      {pollOptions[poll].map((option) => {
+                        const count = votes[poll][option]
+                        const percent = total ? Math.round((count / total) * 100) : 0
+                        return (
+                          <button key={option} type="button" onClick={() => choosePollOption(poll, option)} aria-pressed={picks[poll] === option} className={`relative overflow-hidden border p-3 text-left transition ${picks[poll] === option ? 'border-[#e8b84b] bg-[#e8b84b]/15' : 'border-white/15 bg-white/[0.03] hover:border-white/40'}`}>
+                            <span className="relative z-10 flex items-center justify-between gap-2 text-xs font-black uppercase tracking-[0.06em]"><span>{option}</span><span className="text-[#e8b84b]">{percent}%</span></span>
+                            <span className="relative z-10 mt-1 block text-[10px] uppercase tracking-[0.1em] text-white/45">{count} vote{count === 1 ? '' : 's'}{picks[poll] === option ? ' · Your pick' : ''}</span>
+                            <span className="absolute inset-y-0 left-0 bg-[#e8b84b]/10 transition-all" style={{ width: `${percent}%` }} />
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {picks[poll] && <button type="button" onClick={() => takeBackVote(poll)} className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-white/55 underline decoration-white/25 underline-offset-4 hover:text-white">Take back vote</button>}
+                  </div>
                 )
               })}
             </div>
-            {pick && <button type="button" onClick={takeBackVote} className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-white/55 underline decoration-white/25 underline-offset-4 hover:text-white">Take back my vote</button>}
           </section>
         </section>
 
