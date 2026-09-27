@@ -76,7 +76,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section aria-labelledby="matchup-heading" className="relative z-10 flex-1">
+        <section aria-labelledby="matchup-heading" className="relative z-10 flex flex-1 flex-col">
           <h2 id="matchup-heading" className="sr-only">Zachary Nowell versus Fischer Anderson stats</h2>
           <div className="grid overflow-hidden border border-white/15 bg-white/[0.03] md:grid-cols-[1fr_auto_1fr]">
             {fighters.map((fighter) => (
@@ -117,7 +117,7 @@ export default function Page() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e8b84b]">Who owns the distance?</p>
           </div>
 
-          <section aria-labelledby="poll-heading" className="mt-8 border border-white/15 bg-white/[0.03] p-6 sm:p-8">
+          <section aria-labelledby="poll-heading" className="order-first mt-8 border border-white/15 bg-white/[0.03] p-6 sm:p-8">
             <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8b84b]">Fan poll</p>
