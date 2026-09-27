@@ -36,14 +36,14 @@ export default function Page() {
   const pollOptions = {
     mile: ['Zachary Nowell', 'Fischer Anderson'],
     fight: ['Zachary Nowell', 'Fischer Anderson'],
-    finish: ['Zach submission', 'Fischer submission', 'KO / TKO', 'Decision'],
+    finish: ['Zach submission', 'Fischer submission', 'Zach KO / TKO', 'Fischer KO / TKO', 'Zach decision', 'Fischer decision'],
   } as const
   type PollId = keyof typeof pollOptions
   const [picks, setPicks] = useState<Record<PollId, string | null>>({ mile: null, fight: null, finish: null })
   const [votes, setVotes] = useState<Record<PollId, Record<string, number>>>({
     mile: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
     fight: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
-    finish: { 'Zach submission': 0, 'Fischer submission': 0, 'KO / TKO': 0, Decision: 0 },
+    finish: { 'Zach submission': 0, 'Fischer submission': 0, 'Zach KO / TKO': 0, 'Fischer KO / TKO': 0, 'Zach decision': 0, 'Fischer decision': 0 },
   })
 
   const choosePollOption = (poll: PollId, option: string) => {
