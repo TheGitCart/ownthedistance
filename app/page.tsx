@@ -6,6 +6,7 @@ const fighters = [
     height: "5'6\"",
     weight: '150 lb',
     mile: 'Sub 16:00',
+    punch: '50 PSI',
     note: 'Power & pressure',
   },
   {
@@ -15,6 +16,7 @@ const fighters = [
     height: "5'10\"",
     weight: '115 lb',
     mile: 'Sub 6:00',
+    punch: '37 PSI',
     note: 'Speed & distance',
   },
 ]
@@ -23,6 +25,7 @@ const stats = [
   { label: 'Height', key: 'height' },
   { label: 'Weight', key: 'weight' },
   { label: 'Mile time', key: 'mile' },
+  { label: 'Punch force', key: 'punch' },
 ] as const
 
 export default function Page() {
@@ -34,7 +37,7 @@ export default function Page() {
 
         <header className="relative z-10 flex items-center justify-between border-b border-white/15 pb-5">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#e8b84b]">Fight night / 01</p>
-          <p className="text-xs uppercase tracking-[0.2em] text-white/45">October 4th</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/45">October 5th</p>
         </header>
 
         <section className="relative z-10 py-14 text-center sm:py-20">
@@ -45,7 +48,7 @@ export default function Page() {
           </h1>
           <div className="mx-auto mt-7 flex max-w-md items-center justify-center gap-3 text-xs uppercase tracking-[0.22em] text-white/50">
             <span className="h-px flex-1 bg-white/20" />
-            <span>October 4th</span>
+            <span>October 5th</span>
             <span className="h-px flex-1 bg-white/20" />
           </div>
         </section>
@@ -78,20 +81,23 @@ export default function Page() {
             <div className="relative flex items-center justify-center border-y border-white/15 bg-[#e8b84b] px-4 py-7 text-center text-[#11100f] md:order-2 md:border-x md:border-y-0">
               <div>
                 <p className="text-5xl font-black italic tracking-[-0.1em] sm:text-6xl">VS</p>
-                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.24em]">October 4th</p>
+                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.24em]">October 5th</p>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col items-center justify-between gap-4 border-x border-b border-white/15 px-6 py-5 text-center sm:flex-row sm:text-left">
-            <p className="text-xs uppercase tracking-[0.18em] text-white/40">Official matchup card</p>
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-white/40">Official matchup card</p>
+              <p className="mt-2 text-sm font-black uppercase tracking-[0.12em] text-white/80">1. Mile race <span className="text-white/35">→</span> 2. MMA fight</p>
+            </div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e8b84b]">Who owns the distance?</p>
           </div>
         </section>
 
         <footer className="relative z-10 flex items-center justify-between pt-8 text-[10px] uppercase tracking-[0.2em] text-white/30">
           <span>Fight night</span>
-          <span>October 4th</span>
+          <span>October 5th</span>
           <span>Matchup 01</span>
         </footer>
       </div>
