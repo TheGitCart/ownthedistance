@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 const fighters = [
   {
@@ -45,42 +46,56 @@ export default function Page() {
     fight: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
     finish: { 'Zach submission': 0, 'Fischer submission': 0, 'Zach KO / TKO': 0, 'Fischer KO / TKO': 0, 'Zach decision': 0, 'Fischer decision': 0 },
   })
+  const [voterId, setVoterId] = useState<string | null>(null)
   const [pollsLoaded, setPollsLoaded] = useState(false)
+  const [pollError, setPollError] = useState<string | null>(null)
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('october-5-fight-polls')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as { picks?: Record<PollId, string | null>; votes?: Record<PollId, Record<string, number>> }
-        if (parsed.picks && parsed.votes) {
-          setPicks(parsed.picks)
-          setVotes(parsed.votes)
-        }
-      } catch {
-        window.localStorage.removeItem('october-5-fight-polls')
-      }
-    }
-    setPollsLoaded(true)
+    const existingId = window.localStorage.getItem('october-5-poll-voter-id')
+    const nextId = existingId ?? `${crypto.randomUUID()}-${crypto.randomUUID()}`
+    if (!existingId) window.localStorage.setItem('october-5-poll-voter-id', nextId)
+    setVoterId(nextId)
   }, [])
 
   useEffect(() => {
-    if (pollsLoaded) {
-      window.localStorage.setItem('october-5-fight-polls', JSON.stringify({ picks, votes }))
+    if (!voterId) return
+    let cancelled = false
+    const loadPolls = async () => {
+      const { data, error } = await supabase.from('fight_poll_votes').select('poll_id, option_key, voter_id')
+      if (error) {
+        if (!cancelled) setPollError('Poll results are temporarily unavailable.')
+        return
+      }
+      const nextVotes = { mile: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 }, fight: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 }, finish: { 'Zach submission': 0, 'Fischer submission': 0, 'Zach KO / TKO': 0, 'Fischer KO / TKO': 0, 'Zach decision': 0, 'Fischer decision': 0 } }
+      const nextPicks: Record<PollId, string | null> = { mile: null, fight: null, finish: null }
+      for (const row of data ?? []) {
+        if (row.poll_id in nextVotes && row.option_key in nextVotes[row.poll_id as PollId]) {
+          nextVotes[row.poll_id as PollId][row.option_key] += 1
+          if (row.voter_id === voterId) nextPicks[row.poll_id as PollId] = row.option_key
+        }
+      }
+      if (!cancelled) { setVotes(nextVotes); setPicks(nextPicks); setPollsLoaded(true) }
     }
-  }, [picks, votes, pollsLoaded])
+    loadPolls()
+    return () => { cancelled = true }
+  }, [voterId])
 
-  const choosePollOption = (poll: PollId, option: string) => {
-    if (picks[poll] === option) return
-    setVotes((current) => ({
-      ...current,
-      [poll]: { ...current[poll], ...(picks[poll] ? { [picks[poll] as string]: Math.max(0, current[poll][picks[poll] as string] - 1) } : {}), [option]: current[poll][option] + 1 },
-    }))
+  const choosePollOption = async (poll: PollId, option: string) => {
+    if (!voterId || !pollsLoaded || picks[poll] === option) return
+    setPollError(null)
+    const previous = picks[poll]
+    const { error } = await supabase.from('fight_poll_votes').upsert({ poll_id: poll, option_key: option, voter_id: voterId }, { onConflict: 'poll_id,voter_id' })
+    if (error) { setPollError('Your vote could not be saved. Please try again.'); return }
+    setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: Math.max(0, current[poll][previous] - 1) } : {}), [option]: current[poll][option] + 1 } }))
     setPicks((current) => ({ ...current, [poll]: option }))
   }
 
-  const takeBackVote = (poll: PollId) => {
+  const takeBackVote = async (poll: PollId) => {
     const pick = picks[poll]
-    if (!pick) return
+    if (!voterId || !pick) return
+    setPollError(null)
+    const { error } = await supabase.from('fight_poll_votes').delete().eq('poll_id', poll).eq('voter_id', voterId)
+    if (error) { setPollError('Your vote could not be removed. Please try again.'); return }
     setVotes((current) => ({ ...current, [poll]: { ...current[poll], [pick]: Math.max(0, current[poll][pick] - 1) } }))
     setPicks((current) => ({ ...current, [poll]: null }))
   }
