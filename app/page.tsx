@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const fighters = [
   {
@@ -45,6 +45,29 @@ export default function Page() {
     fight: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
     finish: { 'Zach submission': 0, 'Fischer submission': 0, 'Zach KO / TKO': 0, 'Fischer KO / TKO': 0, 'Zach decision': 0, 'Fischer decision': 0 },
   })
+  const [pollsLoaded, setPollsLoaded] = useState(false)
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem('october-5-fight-polls')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as { picks?: Record<PollId, string | null>; votes?: Record<PollId, Record<string, number>> }
+        if (parsed.picks && parsed.votes) {
+          setPicks(parsed.picks)
+          setVotes(parsed.votes)
+        }
+      } catch {
+        window.localStorage.removeItem('october-5-fight-polls')
+      }
+    }
+    setPollsLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (pollsLoaded) {
+      window.localStorage.setItem('october-5-fight-polls', JSON.stringify({ picks, votes }))
+    }
+  }, [picks, votes, pollsLoaded])
 
   const choosePollOption = (poll: PollId, option: string) => {
     if (picks[poll] === option) return
