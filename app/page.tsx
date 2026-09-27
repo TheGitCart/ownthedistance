@@ -106,7 +106,7 @@ export default function Page() {
         <div className="pointer-events-none absolute -left-32 top-40 h-80 w-80 rounded-full bg-[#e84932]/10 blur-3xl" />
         <div className="pointer-events-none absolute -right-32 top-72 h-96 w-96 rounded-full bg-[#2d79b9]/10 blur-3xl" />
 
-        <header className="relative z-10 flex items-center justify-between border-b border-white/15 pb-5">
+        <header aria-label="Event details" className="relative z-10 flex items-center justify-between border-b border-white/15 pb-5">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#e8b84b]">Fight night / 01</p>
           <p className="text-xs uppercase tracking-[0.2em] text-white/45">October 5th</p>
         </header>
