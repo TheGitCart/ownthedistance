@@ -52,7 +52,6 @@ export default function Page() {
     return nextId
   })
   const [pollsLoaded, setPollsLoaded] = useState(false)
-  const [pollError, setPollError] = useState<string | null>(null)
 
   useEffect(() => {
     const existingId = window.localStorage.getItem('october-5-poll-voter-id')
@@ -67,10 +66,7 @@ export default function Page() {
     const loadPolls = async () => {
       const { data, error } = await supabase.from('fight_poll_votes').select('poll_id, option_key, voter_id')
       if (error) {
-        if (!cancelled) {
-          setPollError('Poll results are temporarily unavailable. You can still try casting a vote.')
-          setPollsLoaded(true)
-        }
+        if (!cancelled) setPollsLoaded(true)
         return
       }
       const nextVotes: Record<PollId, Record<string, number>> = {
@@ -92,7 +88,6 @@ export default function Page() {
 
   const choosePollOption = async (poll: PollId, option: string) => {
     if (!voterId || picks[poll] === option) return
-    setPollError(null)
     const previous = picks[poll]
     setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: Math.max(0, current[poll][previous] - 1) } : {}), [option]: current[poll][option] + 1 } }))
     setPicks((current) => ({ ...current, [poll]: option }))
@@ -101,8 +96,8 @@ export default function Page() {
       { onConflict: 'poll_id,voter_id' },
     )
     if (error) {
-      if (!previous) setPollError('Your vote could not be saved. Please try again.')
       setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: current[poll][previous] + 1 } : {}), [option]: Math.max(0, current[poll][option] - 1) } }))
+
       setPicks((current) => ({ ...current, [poll]: previous }))
     }
   }
@@ -110,9 +105,8 @@ export default function Page() {
   const takeBackVote = async (poll: PollId) => {
     const pick = picks[poll]
     if (!voterId || !pick) return
-    setPollError(null)
     const { error } = await supabase.from('fight_poll_votes').delete().eq('poll_id', poll).eq('voter_id', voterId)
-    if (error) { setPollError('Your vote could not be removed. Please try again.'); return }
+    if (error) return
     setVotes((current) => ({ ...current, [poll]: { ...current[poll], [pick]: Math.max(0, current[poll][pick] - 1) } }))
     setPicks((current) => ({ ...current, [poll]: null }))
   }
@@ -190,7 +184,6 @@ export default function Page() {
               </div>
               <p className="text-xs uppercase tracking-[0.15em] text-white/40">One vote per poll</p>
             </div>
-            {pollError && <p role="alert" className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[#e84932]">{pollError}</p>}
             <div className="mt-6 grid gap-5 lg:grid-cols-3">
               {([
                 ['fight', 'Who wins the sock wrestle?'],
