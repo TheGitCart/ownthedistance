@@ -35,16 +35,22 @@ const stats = [
 
 export default function Page() {
   const pollOptions = {
-    fight: ['Zachary Nowell', 'Fischer Anderson'],
-    finish: ['Under 1 minute', 'Over 1 minute'],
+    'sock-winner': ['Zachary Nowell', 'Fischer Anderson'],
+    'sock-under-minute': ['Under 1 minute', 'Over 1 minute'],
   } as const
   type PollId = keyof typeof pollOptions
-  const [picks, setPicks] = useState<Record<PollId, string | null>>({ fight: null, finish: null })
+  const [picks, setPicks] = useState<Record<PollId, string | null>>({ 'sock-winner': null, 'sock-under-minute': null })
   const [votes, setVotes] = useState<Record<PollId, Record<string, number>>>({
-    fight: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
-    finish: { 'Under 1 minute': 0, 'Over 1 minute': 0 },
+    'sock-winner': { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
+    'sock-under-minute': { 'Under 1 minute': 0, 'Over 1 minute': 0 },
   })
-  const [voterId, setVoterId] = useState<string | null>(null)
+  const [voterId, setVoterId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    const existingId = window.localStorage.getItem('october-5-poll-voter-id')
+    const nextId = existingId ?? `${crypto.randomUUID()}-${crypto.randomUUID()}`
+    if (!existingId) window.localStorage.setItem('october-5-poll-voter-id', nextId)
+    return nextId
+  })
   const [pollsLoaded, setPollsLoaded] = useState(false)
   const [pollError, setPollError] = useState<string | null>(null)
 
@@ -61,11 +67,17 @@ export default function Page() {
     const loadPolls = async () => {
       const { data, error } = await supabase.from('fight_poll_votes').select('poll_id, option_key, voter_id')
       if (error) {
-        if (!cancelled) setPollError('Poll results are temporarily unavailable.')
+        if (!cancelled) {
+          setPollError('Poll results are temporarily unavailable. You can still try casting a vote.')
+          setPollsLoaded(true)
+        }
         return
       }
-      const nextVotes = { winner: { 'Zachary Nowell': 0, 'Fischer Anderson': 0 }, underMinute: { 'Under 1 minute': 0, 'Over 1 minute': 0 } }
-      const nextPicks: Record<PollId, string | null> = { fight: null, finish: null }
+      const nextVotes: Record<PollId, Record<string, number>> = {
+        'sock-winner': { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
+        'sock-under-minute': { 'Under 1 minute': 0, 'Over 1 minute': 0 },
+      }
+      const nextPicks: Record<PollId, string | null> = { 'sock-winner': null, 'sock-under-minute': null }
       for (const row of data ?? []) {
         if (row.poll_id in nextVotes && row.option_key in nextVotes[row.poll_id as PollId]) {
           nextVotes[row.poll_id as PollId][row.option_key] += 1
@@ -79,13 +91,20 @@ export default function Page() {
   }, [voterId])
 
   const choosePollOption = async (poll: PollId, option: string) => {
-    if (!voterId || !pollsLoaded || picks[poll] === option) return
+    if (!voterId || picks[poll] === option) return
     setPollError(null)
     const previous = picks[poll]
-    const { error } = await supabase.from('fight_poll_votes').upsert({ poll_id: poll, option_key: option, voter_id: voterId }, { onConflict: 'poll_id,voter_id' })
-    if (error) { setPollError('Your vote could not be saved. Please try again.'); return }
     setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: Math.max(0, current[poll][previous] - 1) } : {}), [option]: current[poll][option] + 1 } }))
     setPicks((current) => ({ ...current, [poll]: option }))
+    const { error } = await supabase.from('fight_poll_votes').upsert(
+      { poll_id: poll, option_key: option, voter_id: voterId },
+      { onConflict: 'poll_id,voter_id' },
+    )
+    if (error) {
+      setPollError('Your vote could not be saved. Please try again.')
+      setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: current[poll][previous] + 1 } : {}), [option]: Math.max(0, current[poll][option] - 1) } }))
+      setPicks((current) => ({ ...current, [poll]: previous }))
+    }
   }
 
   const takeBackVote = async (poll: PollId) => {
@@ -171,10 +190,11 @@ export default function Page() {
               </div>
               <p className="text-xs uppercase tracking-[0.15em] text-white/40">One vote per poll</p>
             </div>
+            {pollError && <p role="alert" className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[#e84932]">{pollError}</p>}
             <div className="mt-6 grid gap-5 lg:grid-cols-3">
               {([
-                ['fight', 'Who wins the sock wrestle?'],
-                ['finish', 'Does it end under 1 minute?'],
+                ['sock-winner', 'Who wins the sock wrestle?'],
+                ['sock-under-minute', 'Does it end under 1 minute?'],
               ] as const).map(([poll, title]) => {
                 const total = Object.values(votes[poll]).reduce((sum, count) => sum + count, 0)
                 return (
