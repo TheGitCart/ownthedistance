@@ -85,7 +85,9 @@ export default function Page() {
     if (!voterId || !pollsLoaded || picks[poll] === option) return
     setPollError(null)
     const previous = picks[poll]
-    const { error } = await supabase.from('fight_poll_votes').upsert({ poll_id: poll, option_key: option, voter_id: voterId }, { onConflict: 'poll_id,voter_id' })
+    const { error: removeError } = await supabase.from('fight_poll_votes').delete().eq('poll_id', poll).eq('voter_id', voterId)
+    if (removeError) { setPollError('Your vote could not be saved. Please try again.'); return }
+    const { error } = await supabase.from('fight_poll_votes').insert({ poll_id: poll, option_key: option, voter_id: voterId })
     if (error) { setPollError('Your vote could not be saved. Please try again.'); return }
     setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: Math.max(0, current[poll][previous] - 1) } : {}), [option]: current[poll][option] + 1 } }))
     setPicks((current) => ({ ...current, [poll]: option }))
