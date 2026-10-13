@@ -106,7 +106,7 @@ export default function Page() {
 
         <header aria-label="Event details" className="relative z-10 flex items-center justify-between border-b border-white/15 pb-5">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#e8b84b]">Fight night / 01</p>
-          <p className="text-xs uppercase tracking-[0.2em] text-white/45">October 5th</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/45">October 17th</p>
         </header>
 
         <section className="relative z-10 py-14 text-center sm:py-20">
@@ -117,7 +117,7 @@ export default function Page() {
           </h1>
           <div className="mx-auto mt-7 flex max-w-md items-center justify-center gap-3 text-xs uppercase tracking-[0.22em] text-white/50">
             <span className="h-px flex-1 bg-white/20" />
-            <span>October 5th</span>
+            <span>October 17th</span>
             <span className="h-px flex-1 bg-white/20" />
           </div>
         </section>
@@ -150,7 +150,7 @@ export default function Page() {
             <div className="relative flex items-center justify-center border-y border-white/15 bg-[#e8b84b] px-4 py-7 text-center text-[#11100f] md:order-2 md:border-x md:border-y-0">
               <div>
                 <p className="text-5xl font-black italic tracking-[-0.1em] sm:text-6xl">VS</p>
-                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.24em]">October 5th</p>
+                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.24em]">October 17th</p>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function Page() {
             <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8b84b]">Fan polls</p>
-                <h2 id="poll-heading" className="mt-2 text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">Call the October 5th card</h2>
+                <h2 id="poll-heading" className="mt-2 text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">Call the October 17th card</h2>
               </div>
               <p className="text-xs uppercase tracking-[0.15em] text-white/40">One vote per poll</p>
             </div>
@@ -202,7 +202,7 @@ export default function Page() {
         </section>
 
         <footer className="relative z-10 flex items-center justify-between pt-8 text-[10px] uppercase tracking-[0.2em] text-white/30">
-          <span>Fight night</span><span>October 5th</span><span>Matchup 01</span>
+          <span>Fight night</span><span>October 17th</span><span>Matchup 01</span>
         </footer>
       </div>
     </main>
