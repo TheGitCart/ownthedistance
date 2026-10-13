@@ -101,7 +101,7 @@ export default function Page() {
       { onConflict: 'poll_id,voter_id' },
     )
     if (error) {
-      setPollError('Your vote could not be saved. Please try again.')
+      if (!previous) setPollError('Your vote could not be saved. Please try again.')
       setVotes((current) => ({ ...current, [poll]: { ...current[poll], ...(previous ? { [previous]: current[poll][previous] + 1 } : {}), [option]: Math.max(0, current[poll][option] - 1) } }))
       setPicks((current) => ({ ...current, [poll]: previous }))
     }
