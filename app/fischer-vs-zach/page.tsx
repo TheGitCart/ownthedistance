@@ -35,14 +35,14 @@ const stats = [
 
 export default function Page() {
   const pollOptions = {
-    'sock-winner': ['Zachary Nowell', 'Fischer Anderson'],
-    'sock-under-minute': ['Under 1 minute', 'Over 1 minute'],
+    'fight': ['Zachary Nowell', 'Fischer Anderson'],
+    'finish': ['Under 1 minute', 'Over 1 minute'],
   } as const
   type PollId = keyof typeof pollOptions
-  const [picks, setPicks] = useState<Record<PollId, string | null>>({ 'sock-winner': null, 'sock-under-minute': null })
+  const [picks, setPicks] = useState<Record<PollId, string | null>>({ 'fight': null, 'finish': null })
   const [votes, setVotes] = useState<Record<PollId, Record<string, number>>>({
-    'sock-winner': { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
-    'sock-under-minute': { 'Under 1 minute': 0, 'Over 1 minute': 0 },
+    'fight': { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
+    'finish': { 'Under 1 minute': 0, 'Over 1 minute': 0 },
   })
   const [voterId, setVoterId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
@@ -74,10 +74,10 @@ export default function Page() {
         return
       }
       const nextVotes: Record<PollId, Record<string, number>> = {
-        'sock-winner': { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
-        'sock-under-minute': { 'Under 1 minute': 0, 'Over 1 minute': 0 },
+        'fight': { 'Zachary Nowell': 0, 'Fischer Anderson': 0 },
+        'finish': { 'Under 1 minute': 0, 'Over 1 minute': 0 },
       }
-      const nextPicks: Record<PollId, string | null> = { 'sock-winner': null, 'sock-under-minute': null }
+      const nextPicks: Record<PollId, string | null> = { 'fight': null, 'finish': null }
       for (const row of data ?? []) {
         if (row.poll_id in nextVotes && row.option_key in nextVotes[row.poll_id as PollId]) {
           nextVotes[row.poll_id as PollId][row.option_key] += 1
@@ -193,8 +193,8 @@ export default function Page() {
             {pollError && <p role="alert" className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[#e84932]">{pollError}</p>}
             <div className="mt-6 grid gap-5 lg:grid-cols-3">
               {([
-                ['sock-winner', 'Who wins the sock wrestle?'],
-                ['sock-under-minute', 'Does it end under 1 minute?'],
+                ['fight', 'Who wins the sock wrestle?'],
+                ['finish', 'Does it end under 1 minute?'],
               ] as const).map(([poll, title]) => {
                 const total = Object.values(votes[poll]).reduce((sum, count) => sum + count, 0)
                 return (
